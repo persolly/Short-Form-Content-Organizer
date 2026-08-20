@@ -473,13 +473,13 @@ body {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    overflow: hidden;
     position: relative;
     box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     height: 490px;
     transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: visible; /* Fix: Allow menu to render above card */
 }
 
 .reel-card:hover {
@@ -710,6 +710,88 @@ body {
     justify-content: flex-end;
     gap: 10px;
 }
+
+/* --- CARD ACTION MENU (3 DOTS) --- */
+.card-menu-container {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    z-index: 20;
+}
+
+.card-menu-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.card-menu-btn:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.card-menu-dropdown {
+    position: absolute;
+    bottom: 38px;
+    right: 0;
+    background-color: #0f1322;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    width: 140px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 100; /* Ensure it is on top */
+    animation: fadeInMenu 0.15s ease-out;
+}
+
+@keyframes fadeInMenu {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-menu-dropdown.show {
+    display: flex;
+}
+
+.card-menu-dropdown .menu-item {
+    background: none;
+    border: none;
+    padding: 11px 14px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+    width: 100%;
+}
+
+.card-menu-dropdown .menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.card-menu-dropdown .menu-item.delete-card-btn {
+    color: var(--danger-red);
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

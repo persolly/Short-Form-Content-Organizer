@@ -21,18 +21,51 @@ let currentPage = 'dashboard';
 // --- PLATFORM REGEX AND PARSING HELPERS ---
 
 function parseInstagram(url) {
-    const match = url.match(/(?:instagram\.com\/(?:p|reel)\/)([a-zA-Z0-9_-]+)/);
+    const match = url.match(/(?:instagram\.com|instagr\.am)\/(?:p|reel|reels)\/([a-zA-Z0-9_-]+)/i);
     return match ? { embedUrl: `https://www.instagram.com/p/${match[1]}/embed`, id: match[1] } : null;
 }
 
 function parseTikTok(url) {
-    const match = url.match(/(?:tiktok\.com\/@[^\/]+\/video\/|tiktok\.com\/video\/)(\d+)/);
+    const match = url.match(/(?:tiktok\.com\/(?:@[^\/]+\/video|video|v)\/|tiktok\.com\/embed\/v2\/|m\.tiktok\.com\/v\/)(\d+)/i);
     return match ? { embedUrl: `https://www.tiktok.com/embed/v2/${match[1]}`, id: match[1] } : null;
 }
 
 function parseYouTube(url) {
-    const match = url.match(/(?:youtube\.com\/shorts\/|youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    const match = url.match(/(?:youtube\.com\/shorts\/|youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i);
     return match ? { embedUrl: `https://www.youtube.com/embed/${match[1]}`, id: match[1] } : null;
+}
+
+// ...
+function openErrorModal(title, message) {
+    const overlay = document.getElementById('modal-overlay');
+    const titleEl = document.getElementById('modal-title');
+    const inputEl = document.getElementById('modal-input');
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    
+    titleEl.textContent = title;
+    if (inputEl) inputEl.style.display = 'none';
+    
+    let msgEl = document.getElementById('modal-message');
+    if (!msgEl) {
+        msgEl = document.createElement('p');
+        msgEl.id = 'modal-message';
+        msgEl.style.marginBottom = '16px';
+        msgEl.style.color = 'var(--text-secondary)';
+        msgEl.style.fontSize = '14.5px';
+        titleEl.parentNode.insertBefore(msgEl, inputEl);
+    }
+    msgEl.textContent = message;
+    msgEl.style.display = 'block';
+    
+    confirmBtn.textContent = 'OK';
+    confirmBtn.className = 'btn btn-primary';
+    
+    overlay.style.display = 'flex';
+    confirmBtn.focus();
+    
+    confirmBtn.onclick = () => {
+        closeModal();
+    };
 }
 
 // --- FOLDER RENDER & MANAGEMENT ---
@@ -129,15 +162,15 @@ function deleteFolder(id) {
 
 function saveItem() {
     const inputUrl = document.getElementById('input-video-url');
-    if (!inputUrl || !inputUrl.value.trim()) return alert("Please paste a URL first!");
+    if (!inputUrl || !inputUrl.value.trim()) return openErrorModal("Error", "Please paste a URL first!");
     
     const url = inputUrl.value.trim();
     const folderId = document.getElementById('select-target-folder')?.value || "";
     
-    let type = currentPage === 'dashboard' ? (url.includes('instagram.com') ? 'instagram' : url.includes('tiktok.com') ? 'tiktok' : 'youtube') : currentPage;
+    let type = currentPage === 'dashboard' ? ((url.includes('instagram.com') || url.includes('instagr.am')) ? 'instagram' : url.includes('tiktok.com') ? 'tiktok' : 'youtube') : currentPage;
     let parsed = (type === 'instagram') ? parseInstagram(url) : (type === 'tiktok') ? parseTikTok(url) : parseYouTube(url);
     
-    if (!parsed) return alert("Invalid URL for " + type);
+    if (!parsed) return openErrorModal("Invalid URL", "The link you pasted is not a valid " + type + " URL.");
     
     openModal("Enter Video Title", "Title", (title) => {
         const newItem = {
@@ -181,7 +214,13 @@ function renderGrid() {
         
         html += `
             <div class="reel-card" data-id="${item.id}">
-                <button class="delete-reel-btn" data-id="${item.id}" title="Delete video">&times;</button>
+                <div class="card-menu-container">
+                    <button class="card-menu-btn" title="More actions">&#8942;</button>
+                    <div class="card-menu-dropdown">
+                        <button class="menu-item copy-link-btn" data-url="${item.url}">${getIcon('copy')} Copy Link</button>
+                        <button class="menu-item delete-card-btn" data-id="${item.id}"><span style="color:var(--danger-red)">${ICONS['trash']}</span> Delete</button>
+                    </div>
+                </div>
                 <div class="reel-media-container">${mediaHtml}</div>
                 <div class="reel-details">
                     <div class="reel-details-title" title="${item.title}">${item.title}</div>
@@ -192,9 +231,53 @@ function renderGrid() {
     });
     
     grid.innerHTML = html;
-    grid.querySelectorAll('.delete-reel-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => deleteItem(btn.getAttribute('data-id')));
+    
+    // Toggle card menus
+    grid.querySelectorAll('.card-menu-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.card-menu-dropdown').forEach(d => {
+                if (d !== btn.nextElementSibling) d.classList.remove('show');
+            });
+            btn.nextElementSibling.classList.toggle('show');
+        });
     });
+    
+    // Copy link button handler
+    grid.querySelectorAll('.copy-link-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            copyToClipboard(btn.getAttribute('data-url'));
+            btn.closest('.card-menu-dropdown').classList.remove('show');
+        });
+    });
+    
+    // Delete item button handler
+    grid.querySelectorAll('.delete-card-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteItem(btn.getAttribute('data-id'));
+            btn.closest('.card-menu-dropdown').classList.remove('show');
+        });
+    });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Link copied to clipboard! 📋");
+    });
+}
+
+function showToast(message) {
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.className = 'show';
+    setTimeout(() => { toast.className = ''; }, 2500);
 }
 
 function deleteItem(id) {
