@@ -55,12 +55,14 @@
         
         <!-- TOP CONTROLS -->
         <header id="controls">
-            <input type="text" id="input-video-url" placeholder="Paste YouTube Shorts URL here...">
-            <select id="select-target-folder">
-                <option value="">Uncategorized</option>
-                <!-- JS will inject folder options here -->
-            </select>
-            <button id="action-save-video" class="btn btn-primary" style="width: auto; white-space: nowrap;">Save Short</button>
+            <div class="quick-save-form">
+                <input type="text" id="input-video-url" placeholder="Paste YouTube Shorts URL here...">
+                <select id="select-target-folder">
+                    <option value="">Uncategorized</option>
+                    <!-- JS will inject folder options here -->
+                </select>
+                <button id="action-save-video" class="btn btn-primary">Save Short</button>
+            </div>
         </header>
 
         <!-- REELS DISPLAY AREA -->
@@ -69,6 +71,22 @@
                 <!-- JS will inject reel cards here -->
             </div>
         </div>
+
+    </main>
+
+    <!-- Selection Bar -->
+    <div id="selection-bar" style="display:none; align-items: center; gap: 10px; color: var(--text-secondary);">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="select-all-checkbox"> Select All</label>
+        <span id="selection-count" style="font-size: 13px; margin-left: 10px;">0 selected</span>
+        <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+            <select id="move-selected-folder" style="padding: 6px; border-radius: 6px; background: var(--bg-color); color: var(--text-primary); border: 1px solid var(--border-color);">
+                <option value="">Move to...</option>
+                <!-- Options injected by JS -->
+            </select>
+            <button id="delete-selected-btn" class="btn" style="background:var(--danger-red); color:white; padding: 6px 12px; font-size: 12px; height: 30px;">Delete</button>
+            <button id="cancel-selection-btn" class="btn" style="background:rgba(255,255,255,0.1); color:white; padding: 6px 12px; font-size: 12px; height: 30px;">Cancel</button>
+        </div>
+    </div>
 
     </main>
 
