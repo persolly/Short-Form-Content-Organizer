@@ -387,21 +387,23 @@ function openConfirmationModal(message, onConfirm) {
     const inputEl = document.getElementById('modal-input');
     const confirmBtn = document.getElementById('modal-confirm-btn');
     
-    titleEl.textContent = 'Confirm Action';
-    if (inputEl) inputEl.style.display = 'none';
-    
+    // Clean up previous state
     let msgEl = document.getElementById('modal-message');
-    if (!msgEl) {
-        msgEl = document.createElement('p');
-        msgEl.id = 'modal-message';
-        msgEl.style.marginBottom = '16px';
-        msgEl.style.color = 'var(--text-secondary)';
-        msgEl.style.fontSize = '14.5px';
-        titleEl.parentNode.insertBefore(msgEl, inputEl);
-    }
-    msgEl.textContent = message;
-    msgEl.style.display = 'block';
+    if (msgEl) msgEl.remove();
     
+    inputEl.style.display = 'none';
+    
+    // Create new message
+    msgEl = document.createElement('p');
+    msgEl.id = 'modal-message';
+    msgEl.style.marginBottom = '16px';
+    msgEl.style.color = 'var(--text-secondary)';
+    msgEl.style.fontSize = '14.5px';
+    titleEl.parentNode.insertBefore(msgEl, inputEl);
+    
+    msgEl.textContent = message;
+    
+    titleEl.textContent = 'Confirm Action';
     confirmBtn.textContent = 'Confirm';
     confirmBtn.className = 'btn btn-primary';
     
@@ -420,9 +422,19 @@ function openModal(title, placeholder, onConfirm) {
     const inputEl = document.getElementById('modal-input');
     const confirmBtn = document.getElementById('modal-confirm-btn');
     
+    // Clean up previous state
+    let msgEl = document.getElementById('modal-message');
+    if (msgEl) msgEl.remove();
+    
+    inputEl.style.display = 'block';
+    
     titleEl.textContent = title;
     inputEl.placeholder = placeholder;
     inputEl.value = '';
+    
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.className = 'btn btn-primary';
+    
     overlay.style.display = 'flex';
     inputEl.focus();
     
